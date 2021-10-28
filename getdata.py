@@ -12,12 +12,20 @@ url = "https://dutch.alibaba.com/"
 
 driver.get(url)
 
+class Product:
+  def __init__(self, name, price, feats):
+    self.name = name
+    self.price = price
+    self.feats = feats
+
+classProducts = []
+
 search = driver.find_element_by_name("SearchText")
-search.send_keys("Pokemon")
+search.send_keys("Pokemon kaarten")
 search.send_keys(Keys.RETURN)
 
 try:
-    root = WebDriverWait(driver, 30).until(
+    root = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "root"))
         )
     products = root.find_elements(By.CLASS_NAME, "list-no-v2-outter")
@@ -34,8 +42,28 @@ try:
             productRoot = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "root"))
             )
-            naam = productRoot.find_element(By.CLASS_NAME, "module-pdp-title")
-            print(naam.text)
+
+            #Naam
+            naam = productRoot.find_element(By.CLASS_NAME, "module-pdp-title").get_attribute("innerHTML")
+            print(naam)
+
+            #Prijs
+            try:
+                prijs = productRoot.find_element(By.CLASS_NAME, "pre-inquiry-price").text
+                new_prijs = prijs.split()[1]
+                final_prijs = new_prijs.replace(',','.') 
+                print("$" + final_prijs)
+            except:
+                prijs = productRoot.find_element(By.CLASS_NAME, "ma-ref-price").text
+                new_prijs = prijs.split()[1]
+                final_prijs = new_prijs.replace(',','.') 
+                print("$" + final_prijs)
+
+            #Specs
+            specs = productRoot.find_element(By.CLASS_NAME, 'do-entry-separate').text
+            print(specs)
+
+            classProducts.append(Product(naam, final_prijs, specs))
             driver.close()
 
         except:
@@ -43,3 +71,9 @@ try:
 
 finally:
     driver.quit()
+
+for p in classProducts:
+    print("--------------RESULTS")
+    print(p.name)
+    print(p.price)
+    print(p.feats)

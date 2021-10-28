@@ -1,3 +1,6 @@
+import mysql.connector
+
+
 def insert_varibles_into_table(naam, prijs,beschrijving, features):
     try:
         mydb = mysql.connector.connect(

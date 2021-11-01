@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -21,7 +22,7 @@ class Product:
 classProducts = []
 
 search = driver.find_element_by_name("SearchText")
-search.send_keys("Pokemon kaarten")
+search.send_keys("pokemon")
 search.send_keys(Keys.RETURN)
 
 try:
@@ -33,9 +34,14 @@ try:
         parent = driver.window_handles[0]
         driver.switch_to.window(parent)
         productURL = product.find_element(By.CLASS_NAME, "elements-title-normal")
-        productURL.click()
-        time.sleep(7)
+        try:
+            productURL.click()
+        except:
+            print("clickerror")
+            print(productURL)
+
         chld = driver.window_handles[1]
+        driver.execute_script("window.scrollTo(0, 360)")
         driver.switch_to.window(chld)
 
         try:
@@ -70,7 +76,7 @@ try:
             print("error")
 
 finally:
-    driver.quit()
+    print("done")
 
 for p in classProducts:
     print("--------------RESULTS")

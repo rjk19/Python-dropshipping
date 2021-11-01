@@ -1,7 +1,7 @@
 import mysql.connector
 
 
-def insert_varibles_into_table(naam, prijs,beschrijving, features):
+def insert_varibles_into_table(naam, prijs, beschrijving, features):
     try:
         mydb = mysql.connector.connect(
             host = "localhost",
@@ -30,5 +30,5 @@ def insert_varibles_into_table(naam, prijs,beschrijving, features):
             print("MySQL connection is closed")
 
 
-for i in list:
+for i in listName:
     insert_varibles_into_table(i.naam, i.prijs, i.beschrijving, i.features)

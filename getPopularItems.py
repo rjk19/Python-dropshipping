@@ -10,7 +10,7 @@ Path = "C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(Path)
 driver.maximize_window()
 
-url = "https://dutch.alibaba.com/"
+url = "https://sale.alibaba.com/p/rank/index.html?spm=a2700.8293689-nl_NL.2020belt.dtopRankingProduct.5ef311b7N9s3SC&topCardType=101001155&topCardId=103000003457502&topOfferIds=1600219883702&templateBusinessCode=rank-most-popular&themeTraceLog=ncchanneltheme-344_ncchannel-14$ncchanneltheme-344_ncchannel-14&tracelog=BELT_topRankingProduct"
 
 driver.get(url)
 
@@ -24,32 +24,26 @@ class Product:
 
 classProducts = []
 
-search = driver.find_element_by_name("SearchText")
-search.send_keys("pokemon")
-search.send_keys(Keys.RETURN)
-
-
 
 try:
     root = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "root"))
+        EC.presence_of_element_located((By.CLASS_NAME, "prouct-rank-venue-of-waterfall"))
         )
-    products = root.find_elements(By.CLASS_NAME, "list-no-v2-outter")
+    products = root.find_elements(By.CLASS_NAME, "item")
     for product in products:
 
+        parent = driver.window_handles[0]
+        driver.switch_to.window(parent)
+        
         if counter > 10:
             break
         else:
             counter += 1
 
-        parent = driver.window_handles[0]
-        driver.switch_to.window(parent)
-        productURL = product.find_element(By.CLASS_NAME, "elements-title-normal")
         try:
-            productURL.click()
+            product.click()
         except:
             print("clickerror")
-            print(productURL)
 
         chld = driver.window_handles[1]
         driver.switch_to.window(chld)
@@ -59,6 +53,9 @@ try:
                 EC.presence_of_element_located((By.ID, "root"))
             )
 
+            # if driver.find_elements( By.CLASS_NAME, "gdpr-btn gdpr-agree-btn" ).size() != 0 :
+            #     driver.find_elements( By.CLASS_NAME, "gdpr-btn gdpr-agree-btn" ).click()
+
             #Naam
             naam = productRoot.find_element(By.CLASS_NAME, "module-pdp-title").get_attribute("innerHTML")
             print(naam)
@@ -66,27 +63,28 @@ try:
             #Prijs
             try:
                 prijs = productRoot.find_element(By.CLASS_NAME, "pre-inquiry-price").text
-                new_prijs = prijs.split()[1]
-                final_prijs = new_prijs.replace(',','.') 
-                print("$" + final_prijs)
+                final_prijs = prijs.replace('$','') 
+                print(final_prijs)
             except:
                 prijs = productRoot.find_element(By.CLASS_NAME, "ma-ref-price").text
-                new_prijs = prijs.split()[1]
-                final_prijs = new_prijs.replace(',','.') 
-                print("$" + final_prijs)
+                new_prijs = prijs.split()[0]
+                final_prijs = new_prijs.replace('$','') 
+                print(final_prijs)
 
             #Specs
             specs = productRoot.find_element(By.CLASS_NAME, 'do-entry-separate').text
             print(specs)
 
-            classProducts.append(Product(naam, final_prijs, specs))
+            classProducts.append(Product(naam, new_prijs, specs))
             driver.close()
 
         except:
             print("error")
+            break
 
 finally:
     print("done")
+    #driver.quit()
 
     for p in classProducts:
         print("--------------RESULTS")

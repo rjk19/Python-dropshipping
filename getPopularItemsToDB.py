@@ -120,7 +120,7 @@ try:
             break
 
 finally:
-    print("done")
+    print("DONE")
     driver.quit()
 
     for p in classProducts:
@@ -134,6 +134,7 @@ finally:
         print(p.feats)
         print(" ")
     
+    print("SUCCES!")
     print(str(amountOfProductsFound) + " Products found!")
 
 

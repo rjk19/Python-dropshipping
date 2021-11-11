@@ -135,3 +135,42 @@ finally:
         print(" ")
     
     print(str(amountOfProductsFound) + " Products found!")
+
+
+def insert_varibles_into_table(naam, prijs, features):
+    try:
+        mydb = mysql.connector.connect(
+            host = "localhost",
+            port = "3306", # Voor windows
+            # port = "8889", # Voor Mac
+            user = "root",
+            password = "", # Voor windows
+            # password = "root", # Voor Mac
+            database = "BigD"
+        )
+        cursor = mydb.cursor()
+        mysql_insert = "INSERT INTO Product (naam, prijs, features) VALUES (%s, %s, %s)"
+
+        product = (naam, prijs, features)
+        cursor.execute(mysql_insert, product)
+        mydb.commit()
+        print("Product inserted successfully")
+    
+    except mysql.connector.Error as error:
+        print("Failed to insert into MySQL table {}".format(error))
+
+    finally:
+        if mydb.is_connected():
+            cursor.close()
+            mydb.close()
+            print("MySQL connection is closed")
+
+toDB = input("Do you want to write the products to the database? (Y/N): ")
+
+for i in classProducts:
+
+    if toDB.lower() == "y" :
+        insert_varibles_into_table(i.name, i.price, i.feats)
+    elif toDB.lower() == "n" :
+        print("***FINISHED***")
+        break

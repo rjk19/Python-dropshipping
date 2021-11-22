@@ -32,10 +32,15 @@ print("""
 
 
 print("****WELCOME TO DROPSHIPPING BOT V1.0!****")
+
+#Set maximum price
 priceLimit = float(input("Price must be under... (float): "))
+
+#Amount of products you want to search
 amountOfProducts = int(input("How many products would you like to go over? (max: 48): "))
 print("INITIALIZING SCRAPE...")
 
+#Starting Selenium Webdriver and navigate to endpoint
 Path = "C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(Path)
 driver.maximize_window()
@@ -48,15 +53,19 @@ counter = 0
 
 amountOfProductsFound = 0
 
+#Product Object
 class Product:
-  def __init__(self, name, price, feats):
+  def __init__(self, name, url, price, feats):
     self.name = name
+    self.url = url
     self.price = price
     self.feats = feats
 
+#Product List
 classProducts = []
 
 try:
+    #Wait till Products have loaded and interact with products
     root = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "prouct-rank-venue-of-waterfall"))
         )
@@ -77,12 +86,10 @@ try:
         driver.switch_to.window(chld)
 
         try:
+            #Wait till individual product page has loaded and scrape data
             productRoot = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.ID, "root"))
             )
-
-            # if driver.find_elements( By.CLASS_NAME, "gdpr-btn gdpr-agree-btn" ).size() != 0 :
-            #     driver.find_elements( By.CLASS_NAME, "gdpr-btn gdpr-agree-btn" ).click()
 
             #Naam
             naam = productRoot.find_element(By.CLASS_NAME, "module-pdp-title").get_attribute("innerHTML")
@@ -106,11 +113,16 @@ try:
                 except:
                     prijsV = float(final_prijs) 
 
+            #FotoURL
+            refurl = productRoot.find_element(By.CLASS_NAME, "main-image-thumb-item")
+            rawurl = refurl.find_element(By.CLASS_NAME, "J-slider-cover-item").get_attribute('src')
+            url = rawurl.replace('_50x50.jpg', '')
+
             #Specs
             specs = productRoot.find_element(By.CLASS_NAME, 'do-entry-separate').text
 
             if prijsV <= priceLimit :
-                classProducts.append(Product(naam, prijsV, specs))
+                classProducts.append(Product(naam, url, prijsV, specs))
                 amountOfProductsFound += 1
 
             driver.close()
@@ -120,18 +132,97 @@ try:
             break
 
 finally:
-    print("done")
+    #Print list of found products for inspection
+    print("DONE")
     driver.quit()
 
     for p in classProducts:
         print(" ")
         print("--------------PRODUCT")
+        print("---INDEX:")
+        print(classProducts.index(p))
         print("---NAME:")
         print(p.name)
+        print("---FOTOURL:")
+        print(p.url)
         print("---PRICE:")
         print(p.price)
         print("---SPECS:")
         print(p.feats)
         print(" ")
     
+    print("SUCCES!")
     print(str(amountOfProductsFound) + " Products found!")
+
+#Function to delete product if desired
+def deleteProduct():
+    delete = input("Do you want to delete a product from the list?(Y/N): ")
+
+    if delete.lower() == "y":
+        pToDelete = int(input("Type the index of the product you want to delete: "))
+        classProducts.pop(pToDelete)
+
+        for p in classProducts:
+            print(" ")
+            print("--------------PRODUCT")
+            print("---INDEX:")
+            print(classProducts.index(p))
+            print("---NAME:")
+            print(p.name)
+            print("---FOTOURL:")
+            print(p.url)
+            print("---PRICE:")
+            print(p.price)
+            print("---SPECS:")
+            print(p.feats)
+            print(" ")
+
+        print("Product removed!")
+        deleteProduct()
+
+    elif delete.lower() == "n":
+        print("All products kept")
+
+#Calling Delete function
+deleteProduct()
+
+#Setting up DB for Insertion
+def insert_varibles_into_table(naam, fotoURL, prijs, features):
+    try:
+        mydb = mysql.connector.connect(
+            host = "localhost",
+            port = "3306", # Voor windows
+            # port = "8889", # Voor Mac
+            user = "root",
+            password = "", # Voor windows
+            # password = "root", # Voor Mac
+            database = "BigD"
+        )
+        cursor = mydb.cursor()
+        mysql_insert = "INSERT INTO Product (naam, fotoURL, prijs, features) VALUES (%s, %s, %s, %s)"
+
+        product = (naam, fotoURL, prijs, features)
+        cursor.execute(mysql_insert, product)
+        mydb.commit()
+        print("Product inserted successfully")
+    
+    except mysql.connector.Error as error:
+        print("Failed to insert into MySQL table {}".format(error))
+
+    finally:
+        if mydb.is_connected():
+            cursor.close()
+            mydb.close()
+            print("MySQL connection is closed")
+
+#DB Insertion
+toDB = input("Do you want to write the products to the database? (Y/N): ")
+
+for i in classProducts:
+
+    if toDB.lower() == "y" :
+        insert_varibles_into_table(i.name, i.url, i.price, i.feats)
+    elif toDB.lower() == "n" :
+        print("***FINISHED***")
+        break
+

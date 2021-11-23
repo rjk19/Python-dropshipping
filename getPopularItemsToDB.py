@@ -93,48 +93,71 @@ try:
 
             #Naam
             naam = productRoot.find_element(By.CLASS_NAME, "module-pdp-title").get_attribute("innerHTML")
+            print(naam)
 
             #Prijs
-            try:
+            if productRoot.find_elements(By.CLASS_NAME, "pre-inquiry-price"):
                 prijs = productRoot.find_element(By.CLASS_NAME, "pre-inquiry-price").text
                 final_prijs = prijs.replace('$','')
                 try: 
                     final_prijsNoComma = final_prijs.replace(',','')
                     prijsV = float(final_prijsNoComma)
+                    prijsFinal = "{:.2f}".format(prijsV)
                 except:
                     prijsV = float(final_prijs)
-            except:
+                    prijsFinal = "{:.2f}".format(prijsV)
+
+            elif productRoot.find_elements(By.CLASS_NAME, "ma-ref-price"):
                 prijs = productRoot.find_element(By.CLASS_NAME, "ma-ref-price").text
                 new_prijs = prijs.split()[0]
                 final_prijs = new_prijs.replace('$','') 
                 try: 
                     final_prijsNoComma = final_prijs.replace(',','')
                     prijsV = float(final_prijsNoComma)
+                    prijsFinal = "{:.2f}".format(prijsV)
                 except:
-                    prijsV = float(final_prijs) 
+                    prijsV = float(final_prijs)
+                    prijsFinal = "{:.2f}".format(prijsV)
+
+            elif productRoot.find_elements(By.CLASS_NAME, "ma-reference-price-highlight"):
+                prijs = productRoot.find_element(By.CLASS_NAME, "ma-reference-price-highlight").text
+                new_prijs = prijs.split()[0]
+                final_prijs = new_prijs.replace('$','') 
+                try: 
+                    final_prijsNoComma = final_prijs.replace(',','')
+                    prijsV = float(final_prijsNoComma)
+                    prijsFinal = "{:.2f}".format(prijsV)
+                except:
+                    prijsV = float(final_prijs)
+                    prijsFinal = "{:.2f}".format(prijsV)
 
             #FotoURL
-            refurl = productRoot.find_element(By.CLASS_NAME, "main-image-thumb-item")
-            rawurl = refurl.find_element(By.CLASS_NAME, "J-slider-cover-item").get_attribute('src')
-            url = rawurl.replace('_50x50.jpg', '')
+            rawurl = productRoot.find_element(By.CLASS_NAME, "J-slider-cover-item").get_attribute('src')
+            if "_50x50.jpg" in rawurl:
+                url = rawurl.replace('_50x50.jpg', '')
+            elif "_50x50.png" in rawurl:
+                url = rawurl.replace('_50x50.png', '')
+            else:
+                url = rawurl
 
             #Specs
             specs = productRoot.find_element(By.CLASS_NAME, 'do-entry-separate').text
 
             if prijsV <= priceLimit :
-                classProducts.append(Product(naam, url, prijsV, specs))
+                classProducts.append(Product(naam, url, prijsFinal, specs))
                 amountOfProductsFound += 1
 
             driver.close()
 
         except:
-            print("error")
-            break
+            driver.close()
+            #print("error")
+            #break
 
 finally:
     #Print list of found products for inspection
     print("DONE")
-    driver.quit()
+    #driver.quit()
 
     for p in classProducts:
         print(" ")

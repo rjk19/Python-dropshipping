@@ -211,10 +211,10 @@ deleteProduct()
 #Setting up DB for Insertion
 def insert_varibles_into_table(Naam, Specificaties, Fotonaam, Prijs):
     try:
-        server = 'youngcapital.database.windows.net' 
-        database = 'Webshop' 
-        username = 'youngcapitaldatabase' 
-        password = 'Database1' 
+        server = '' 
+        database = '' 
+        username = '' 
+        password = '' 
         cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
         cursor = cnxn.cursor()
         
